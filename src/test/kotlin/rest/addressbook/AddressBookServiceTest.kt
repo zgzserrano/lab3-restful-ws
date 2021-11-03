@@ -73,6 +73,8 @@ class AddressBookServiceTest {
         assertEquals(1, juanUpdated?.id)
         assertEquals(juanURI, juanUpdated?.href)
 
+
+        var addressBookCopy = addressBook.personList.toMutableList()
         //////////////////////////////////////////////////////////////////////
         // Verify that POST /contacts is well implemented by the service, i.e
         // complete the test to ensure that it is not safe and not idempotent
@@ -122,6 +124,8 @@ class AddressBookServiceTest {
         assertEquals(3, mariaUpdated?.id)
         assertEquals(mariaURI, mariaUpdated?.href)
 
+        var personListBeforeGet = addressBook.personList.toMutableList()
+
         // Check that the new user exists
         response = restTemplate.getForEntity(mariaURI, Person::class.java)
 
@@ -148,6 +152,8 @@ class AddressBookServiceTest {
         val juan = Person(name = "Juan", id = addressBook.nextId())
         addressBook.personList.add(salvador)
         addressBook.personList.add(juan)
+
+        var personListBeforeGet = addressBook.personList.toMutableList()
 
         // Test list of contacts
         val response = restTemplate.getForEntity("http://localhost:$port/contacts", Array<Person>::class.java)
@@ -176,8 +182,12 @@ class AddressBookServiceTest {
         // Update Maria
         val maria = Person(name = "Maria")
 
+        var personListBeforePost = addressBook.personList.toMutableList()
+
         var response = restTemplate.exchange(juanURI, HttpMethod.PUT, HttpEntity(maria), Person::class.java)
         assertEquals(204, response.statusCode.value())
+
+        var personListAfterPost = addressBook.personList.toMutableList()
 
         // Verify that the update is real
         response = restTemplate.getForEntity(juanURI, Person::class.java)
@@ -221,6 +231,7 @@ class AddressBookServiceTest {
         val juanURI = URI.create("http://localhost:$port/contacts/person/2")
         addressBook.personList.add(salvador)
         addressBook.personList.add(juan)
+
 
         // Delete a user
         restTemplate.execute(juanURI, HttpMethod.DELETE, {}, { assertEquals(204, it.statusCode.value()) })
