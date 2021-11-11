@@ -212,15 +212,14 @@ class AddressBookServiceTest {
         // complete the test to ensure that it is idempotent but not safe
         //////////////////////////////////////////////////////////////////////
         // Not safe: After the request, addressBook should have changed its state.
-        assertNotEquals(personListAfterPost, personListBeforePost)
-        // Check idempotent
-        restTemplate.execute("http://localhost:$port/contacts/person/3", HttpMethod.PUT,
-            {
-                it.headers.contentType = MediaType.APPLICATION_JSON
-                ObjectMapper().writeValue(it.body, maria)
-            },
-            { assertEquals(404, it.statusCode.value()) }
-        )
+        response = restTemplate.exchange(juanURI, HttpMethod.PUT, HttpEntity(maria), Person::class.java)
+        
+        assertEquals(204, response.statusCode.value())
+
+        // Not safe: Maria has change
+        assertEquals(maria.name, updatedMaria?.name)
+        assertEquals(2, updatedMaria?.id)
+        assertEquals(juanURI, updatedMaria?.href)
     }
 
     @Test
